@@ -1,4 +1,4 @@
-import { db } from 'hatchable';
+import { db, auth } from 'hatchable';
 
 export const access = 'user';
 export const methods = ['GET', 'POST'];
@@ -6,7 +6,8 @@ export const methods = ['GET', 'POST'];
 const EMPTY = { plots: [], tx: [] };
 
 export default async function (req, res) {
-  const userId = String(req.user.id);
+  const authenticatedUser = await auth.getUser(req);
+  const userId = String((authenticatedUser || req.user).id);
   if (req.method === 'GET') {
     const result = await db.query('SELECT data, updated_at FROM farm_data WHERE user_id = $1', [userId]);
     if (!result.rows.length) return res.json({ data: EMPTY, updated_at: null });
